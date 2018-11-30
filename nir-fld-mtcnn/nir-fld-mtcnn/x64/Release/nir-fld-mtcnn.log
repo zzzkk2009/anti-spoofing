@@ -1,0 +1,24 @@
+﻿  nir-fld-mtcnn.cpp
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\nir-fld-mtcnn.cpp(86): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\nir-fld-mtcnn.cpp(187): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\nir-fld-mtcnn.cpp(188): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\nir-fld-mtcnn.cpp(189): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\nir-fld-mtcnn.cpp(190): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+  mtcnn.cpp
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\src\mtcnn\mtcnn.cpp(52): warning C4244: “参数”: 从“float”转换到“_Tp”，可能丢失数据
+          with
+          [
+              _Tp=int
+          ]
+  svm.cpp
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\src\svm\svm.cpp(10): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\src\svm\svm.cpp(11): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\src\svm\svm.cpp(14): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\src\svm\svm.cpp(15): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+  util.cpp
+  正在生成代码
+  41 of 1010 functions ( 4.1%) were compiled, the rest were copied from previous compilation.
+    3 functions were new in current compilation
+    33 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  nir-fld-mtcnn.vcxproj -> E:\srcs\anti-spoofing\nir-fld-mtcnn\x64\Release\nir-fld-mtcnn.exe

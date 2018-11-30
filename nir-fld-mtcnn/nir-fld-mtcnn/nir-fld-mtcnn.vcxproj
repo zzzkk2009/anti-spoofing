@@ -68,11 +68,17 @@
     <Import Project="..\lib\3rdParty\OpenCV3.4.3\OpenCV3.4.3_debug.props" />
     <Import Project="local.props" />
     <Import Project="..\lib\3rdParty\fftw\fftw.props" />
+    <Import Project="..\lib\3rdParty\mxnet\mxnet-debug.props" />
+    <Import Project="..\lib\3rdParty\mkldnn\mkldnn_debug.props" />
+    <Import Project="..\lib\3rdParty\mklml\mklml_debug.props" />
+    <Import Project="..\lib\3rdParty\dmlc-core\dmlc-core-debug.props" />
+    <Import Project="..\lib\3rdParty\OpenBLAS0.2.19\openblas_debug.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\lib\3rdParty\OpenCV3.4.3\OpenCV3.4.3.props" />
     <Import Project="local.props" />
+    <Import Project="..\lib\3rdParty\fftw\fftw.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -138,13 +144,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -157,16 +163,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\flow\flow.h" />
-    <ClInclude Include="include\lbp\LBP.hpp" />
-    <ClInclude Include="include\lbp\lbp2.h" />
     <ClInclude Include="include\lbp\lbp3.h" />
     <ClInclude Include="include\mtcnn\mtcnn.h" />
+    <ClInclude Include="include\net\mx_shuffle_predict_2.h" />
     <ClInclude Include="include\svm\svm.h" />
     <ClInclude Include="include\utils\util.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="nir-fld-mtcnn.cpp" />
+    <ClCompile Include="src\main_bak.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -174,14 +179,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\flow\flow.cpp" />
-    <ClCompile Include="src\lbp\LBP.cpp" />
-    <ClCompile Include="src\lbp\lbp2.cpp" />
     <ClCompile Include="src\lbp\lbp3.cpp" />
+    <ClCompile Include="src\main150.cpp" />
     <ClCompile Include="src\mtcnn\mtcnn.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\net\mx_shuffle_predict_2.cpp" />
     <ClCompile Include="src\svm\svm.cpp" />
     <ClCompile Include="src\utils\util.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="local.props" />

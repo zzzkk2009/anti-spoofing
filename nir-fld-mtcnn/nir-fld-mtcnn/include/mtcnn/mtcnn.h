@@ -31,8 +31,18 @@ typedef struct FaceInfo {
 	float landmark[10];
 	FaceBox bbox;
 } FaceInfo;
+typedef struct FaceSize {
+	float width;
+	float height;
+} FaceSize;
 
 bool CompareBBox(const FaceInfo & a, const FaceInfo & b);
+
+FaceInfo drawRectangle(Mat& img, vector<FaceInfo>& v);
+Rect FaceInfo2Rect(FaceInfo& faceInfo);
+void cropFace4Flow(Mat& img, FaceInfo& faceInfo, Rect& cropInfo, int padding = 10);
+float faceInfoArea(FaceInfo& faceInfo);
+FaceSize getFaceSize(FaceInfo& faceInfo);
 
 class MTCNN {
 public:

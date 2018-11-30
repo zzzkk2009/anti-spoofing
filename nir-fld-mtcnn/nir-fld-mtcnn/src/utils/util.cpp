@@ -1,6 +1,7 @@
 #include <utils/util.h>
 
 using namespace std;
+using namespace util;
 
 double util::computeVariance(vector<double> v)
 {
@@ -127,6 +128,265 @@ std::vector<std::string> util::split(const std::string &s, char delim) {
 	}
 
 	return elems;
+}
+
+void util::cropArea4Flow(Mat& img, Mat& cropedArea)
+{
+	int clip_x = img.cols * 0.25;
+	int clip_y = img.rows * 0.25;
+	int clip_w = img.cols * 0.65;
+	int clip_h = img.rows * 0.65;
+
+	Rect clipArea = Rect(clip_x, clip_y, clip_w, clip_h);
+	cropedArea = img(clipArea);
+	resize(cropedArea, cropedArea, Size(150, 150));
+}
+
+void util::cropArea4Flow(Mat& img, Rect& cropRect, Mat& cropedArea)
+{
+	cropedArea = img(cropRect);
+}
+
+void util::gatherDataSet(Mat& img, string mainDir)
+{
+	string nextDirName = util::cf_NextdirName(mainDir);
+	string nextDirPath = mainDir + nextDirName;
+	string nextFileName = util::cf_NextFileName(nextDirPath);
+	string filename = nextDirPath + "/" + nextFileName;
+	imwrite(filename, img);
+}
+
+
+void util::cf_findFileFromDir(string mainDir, vector<string> &files)
+{
+	char* cur_work_dir = getcwd(NULL, NULL);
+	files.clear();
+	const char *dir = mainDir.c_str();
+	_chdir(dir);
+	long hFile;
+	_finddata_t fileinfo;
+
+	if ((hFile = _findfirst("*.*", &fileinfo)) != -1)
+	{
+		do
+		{
+			if ((fileinfo.attrib & _A_SUBDIR))//找到文件夹
+			{
+				if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+				{
+					char subdir[_MAX_PATH];
+					strcpy_s(subdir, dir);
+					//strcat_s(subdir, "\\");
+					strcat_s(subdir, "/");
+					strcat_s(subdir, fileinfo.name);
+					string temDir = subdir;
+					vector<string> temFiles;
+					cf_findFileFromDir(temDir, temFiles);
+					for (vector<string>::iterator it = temFiles.begin(); it < temFiles.end(); it++)
+					{
+						files.push_back(*it);
+					}
+				}
+			}
+			else//直接找到文件
+			{
+				char filename[_MAX_PATH];
+				strcpy_s(filename, dir);
+				//strcat_s(filename, "\\");
+				strcat_s(filename, "/");
+				strcat_s(filename, fileinfo.name);
+				string temfilename = filename;
+				files.push_back(temfilename);
+			}
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+	_chdir(cur_work_dir);
+}
+
+void util::cf_findFileFromDir2(string mainDir, vector<string> &files)
+{
+	char* cur_work_dir = getcwd(NULL, NULL);
+	files.clear();
+	const char *dir = mainDir.c_str();
+	_chdir(dir);
+	long hFile;
+	_finddata_t fileinfo;
+
+	if ((hFile = _findfirst("*.*", &fileinfo)) != -1)
+	{
+		do
+		{
+			if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+			{
+				files.push_back(fileinfo.name);
+			}
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+	_chdir(cur_work_dir);
+}
+
+void util::cf_findFileFromDir(string mainDir, vector<int> &files)
+{
+	vector<string> s_files;
+	cf_findFileFromDir(mainDir, s_files);
+	if (s_files.size() > 0)
+	{
+		for (int i = 0; i < s_files.size(); i++)
+		{
+			files.push_back(stoi(s_files[i]));
+		}
+	}
+}
+
+
+
+void util::cf_findSubDirFromDir(string mainDir, vector<int> &dirs)
+{
+	char* cur_work_dir = getcwd(NULL, NULL);
+
+	if (access(mainDir.c_str(), 0) == -1) // 目录不存在
+	{
+		int flag = mkdir(mainDir.c_str()); // flag: 0,成功   -1,失败
+	}
+
+	dirs.clear();
+	const char *dir = mainDir.c_str();
+	_chdir(dir);
+	long hFile;
+	_finddata_t fileinfo;
+
+	if ((hFile = _findfirst("*.*", &fileinfo)) != -1)
+	{
+		do
+		{
+			if ((fileinfo.attrib & _A_SUBDIR))//找到文件夹
+			{
+				if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+				{
+					dirs.push_back(stoi(fileinfo.name));
+				}
+			}
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+
+	_chdir(cur_work_dir);
+}
+
+template <typename T, typename S>
+T util::fill_cast(const S& v, const int width, const char c)
+{
+	T result;
+	std::stringstream inter;
+	inter << std::setw(width) << std::setfill(c) << v;
+	inter >> result;
+	return result;
+}
+
+string util::cf_NextdirName(string mainDir)
+{
+	vector <int> dirs;
+	cf_findSubDirFromDir(mainDir, dirs);
+	int endDir = 1;
+	int dirWidth = 5;
+	if (dirs.size())
+	{
+		sort(dirs.begin(), dirs.end());
+		endDir = dirs.at(dirs.size() - 1);
+		string subMainDir = fill_cast<std::string>(endDir, dirWidth, '0');
+
+		string subMainPath = mainDir + subMainDir;
+		//if (access(subMainPath.c_str(), 0) == -1) // 目录不存在
+		//{
+		//	int flag = mkdir(subMainPath.c_str()); // flag: 0,成功   -1,失败
+		//}
+
+		vector<string> subFiles;
+		cf_findFileFromDir2(subMainPath, subFiles);
+		if (subFiles.size() >= 5000)
+		{
+			endDir += 1;
+		}
+	}
+
+	
+	string nextDirName = fill_cast<std::string>(endDir, dirWidth, '0');
+
+	string nextDirpath = mainDir + nextDirName;
+	if (access(nextDirpath.c_str(), 0) == -1) // 目录不存在
+	{
+		int flag = mkdir(nextDirpath.c_str()); // flag: 0,成功   -1,失败
+	}
+
+	return nextDirName;
+}
+
+string util::cf_NextFileName(string dirName)
+{
+	vector<string> files;
+	cf_findFileFromDir2(dirName, files);
+
+	string nextFileName = "1.png";
+	if (files.size() > 0)
+	{
+		sort(files.begin(), files.end());
+		string endFile = files.at(files.size() - 1);
+		std::vector<string> f_v = split(endFile, '.');
+		int iFilename = stoi(f_v[0]);
+		iFilename += 1;
+		nextFileName = to_string(iFilename) + ".png";
+	}
+
+	nextFileName = fill_cast<std::string>(nextFileName, 9, '0');
+	return nextFileName;
+}
+
+void util::getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<Mat>& rgb_cameraFrames, vector<Mat>& ir_cameraFrames, int frame_num, int margin_frame)
+{
+	if (frame_num < 1)
+		frame_num = 1;
+	if (margin_frame < 0)
+		margin_frame = 0;
+	
+	rgb_cameraFrames.clear();
+	ir_cameraFrames.clear();
+
+	int n = -1;
+	while (true)
+	{
+		n++;
+
+		Mat rgb_cameraFrame, ir_cameraFrame;
+		rgb_camera >> rgb_cameraFrame;
+		ir_camera >> ir_cameraFrame;
+
+		if (rgb_cameraFrame.empty())
+		{
+			std::cerr << "rgb_cameraFrame empty!!!" << std::endl;
+			getchar();
+			exit(1);
+		}
+
+		if (ir_cameraFrame.empty())
+		{
+			std::cerr << "ir_cameraFrame empty!!!" << std::endl;
+			getchar();
+			exit(2);
+		}
+
+		if (n % (margin_frame + 1) != 0)
+			continue;
+
+		if (rgb_cameraFrames.size() < frame_num)
+		{
+			rgb_cameraFrames.push_back(rgb_cameraFrame);
+			ir_cameraFrames.push_back(ir_cameraFrame);
+		}
+		else
+			break;
+	}
 }
 
 

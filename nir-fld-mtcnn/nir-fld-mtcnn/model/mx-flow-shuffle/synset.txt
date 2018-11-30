@@ -1,0 +1,2 @@
+0 non-living
+1 living

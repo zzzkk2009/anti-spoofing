@@ -30,7 +30,7 @@ void flow::makecolorwheel(vector<Scalar> &colorwheel)
 	for (i = 0; i < MR; i++) colorwheel.push_back(Scalar(255, 0, 255 - 255 * i / MR));
 }
 
-void flow::motionToColor(Mat flow, Mat &color)
+void flow::motionToColor(Mat& flow, Mat &color)
 {
 	if (color.empty())
 		color.create(flow.rows, flow.cols, CV_8UC3);
@@ -96,7 +96,7 @@ void flow::motionToColor(Mat flow, Mat &color)
 	}
 }
 
-void flow::drawArrow(cv::Mat& img, cv::Point pStart, cv::Point pEnd, int len, int alpha, cv::Scalar& color, int thickness, int lineType)
+void flow::drawArrow(cv::Mat& img, cv::Point& pStart, cv::Point& pEnd, int len, int alpha, cv::Scalar& color, int thickness, int lineType)
 {
 	const double PI = 3.1415926;
 	Point arrow;
@@ -119,21 +119,20 @@ void flow::drawArrow(cv::Mat& img, cv::Point pStart, cv::Point pEnd, int len, in
 	line(img, pEnd, arrow, color, thickness, lineType);
 }
 
-void flow::motionToVectorField(Mat img, Mat flow)
+void flow::motionToVectorField(Mat& img, Mat& flow)
 {
 	Scalar lineColor(0, 255, 0);
-	for (int i = 0; i < flow.rows; ++i)
+	/*int end_i = 0;
+	int end_j = 0;*/
+	for (int i = 0; i < flow.rows; i++)
 	{
 		if (i % 5 != 0)
-		{
 			continue;
-		}
-		for (int j = 0; j < flow.cols; ++j)
+
+		for (int j = 0; j < flow.cols; j++)
 		{
 			if (j % 5 != 0)
-			{
 				continue;
-			}
 
 			Vec2f flow_at_point = flow.at<Vec2f>(i, j);
 			float fx = flow_at_point[0];
@@ -177,18 +176,25 @@ void flow::motionToVectorField(Mat img, Mat flow)
 
 			if (fx != 0 || fy != 0)
 			{
+				if (i > 400 && j > 600)
+				{
+					cout << i;
+				}
 				Point pStart(i, j);
 				Point pEnd(end_x, end_y);
 				float len = sqrt(pow(pEnd.x - pStart.x, 2) + pow(pEnd.y - pStart.y, 2));
 				int sub_len = len * 0.3 > 10 ?  3 : int(len * 0.3);
 				drawArrow(img, pStart, pEnd, sub_len, 45, lineColor);
 			}
-			
+			//end_j = j;
 		}
+		//end_i = i;
 	}
+	/*cout << end_i;
+	cout << end_j;*/
 }
 
-vector<int> flow::calcFlowAngleHist(Mat flow, FLOW_HIST_TYPE flowHistType)
+vector<int> flow::calcFlowAngleHist(Mat& flow, FLOW_HIST_TYPE flowHistType)
 {
 	int size = 360 / flowHistType;
 	vector<int> hist(size);
@@ -228,7 +234,7 @@ vector<int> flow::calcFlowAngleHist(Mat flow, FLOW_HIST_TYPE flowHistType)
 	return hist;
 }
 
-vector<float> flow::extractFlowAnglFeature(Mat flow, SAMPLE_MARGIN sampleMargin)
+vector<float> flow::extractFlowAnglFeature(Mat& flow, SAMPLE_MARGIN sampleMargin)
 {
 	int size = (flow.rows / sampleMargin + 1) * (flow.cols / sampleMargin + 1);
 	vector<float> feature(size);
@@ -256,4 +262,19 @@ vector<float> flow::extractFlowAnglFeature(Mat flow, SAMPLE_MARGIN sampleMargin)
 	}
 
 	return feature;
+}
+
+void flow::computeLBPFeature(Mat& motion2color, Mat& featureMat)
+{
+	Mat motion2color_gray;
+	cvtColor(motion2color, motion2color_gray, CV_BGR2GRAY);
+	UniformRotInvLBPFeature(motion2color_gray, Size(4, 4), featureMat);
+	featureMat.convertTo(featureMat, CV_32F);
+}
+
+void flow::computeLBPFeature(Mat& motion2color, vector<float>& feature)
+{
+	Mat featureMat;
+	computeLBPFeature(motion2color, featureMat);
+	feature.assign((float*)featureMat.datastart, (float*)featureMat.dataend);
 }

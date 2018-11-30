@@ -24,19 +24,16 @@
     <ClInclude Include="include\flow\flow.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\lbp\lbp2.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="include\lbp\lbp3.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\lbp\LBP.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\utils\util.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\svm\svm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\net\mx_shuffle_predict_2.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,13 +47,7 @@
     <ClCompile Include="src\flow\flow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\lbp\lbp2.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\lbp\lbp3.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lbp\LBP.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\utils\util.cpp">
@@ -65,7 +56,16 @@
     <ClCompile Include="src\svm\svm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="nir-fld-mtcnn.cpp">
+    <ClCompile Include="src\net\mx_shuffle_predict_2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main150.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main_bak.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

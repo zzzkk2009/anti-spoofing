@@ -89,49 +89,53 @@ int main(int argc, char **argv)
 		cv::putText(rgb_cameraFrame, ss.str() + "FPS",
 			cv::Point(20, 45), 4, 0.5, cv::Scalar(0, 0, 125));
 
-		
-		FaceInfo maxFaceInfo_rgb = FaceInfo{};
-		for (int i = 0; i < facesInfo_rgb.size(); i++) {
-			FaceInfo faceInfo_rgb = facesInfo_rgb[i];
-			int x = (int)faceInfo_rgb.bbox.xmin;
-			int y = (int)faceInfo_rgb.bbox.ymin;
-			int w = (int)(faceInfo_rgb.bbox.xmax - faceInfo_rgb.bbox.xmin + 1);
-			int h = (int)(faceInfo_rgb.bbox.ymax - faceInfo_rgb.bbox.ymin + 1);
-			stringstream str_x, str_y, str_h, str_w;
-			str_x << x;
-			str_y << y;
-			str_h << h;
-			str_w << w;
-			putText(rgb_cameraFrame, "x:"+ str_x.str()+",y:"+str_y.str()+",h:"+ str_h.str() + ",w:" + str_w.str(), cv::Point(x, y), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
-			cv::rectangle(rgb_cameraFrame, cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0), 1);
 
-			int area = w * h;
-
-			if (0 == i)
-			{
-				maxFaceInfo_rgb = faceInfo_rgb;
-			}
-			else
-			{
-				int max_w = (int)(maxFaceInfo_rgb.bbox.xmax - maxFaceInfo_rgb.bbox.xmin + 1);
-				int max_h = (int)(maxFaceInfo_rgb.bbox.ymax - maxFaceInfo_rgb.bbox.ymin + 1);
-				int max_area = max_w * max_h;
-				if (area > max_area)
-				{
-					maxFaceInfo_rgb = faceInfo_rgb;
-				}
-			}
-		}
-		putText(rgb_cameraFrame, "maxFace", Point(maxFaceInfo_rgb.bbox.xmin, maxFaceInfo_rgb.bbox.ymin-20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+		FaceInfo maxFaceInfo_rgb = drawRectangle(rgb_cameraFrame, facesInfo_rgb);
 		
-		for (int i = 0; i < facesInfo_ir.size(); i++) {
+		//FaceInfo maxFaceInfo_rgb = FaceInfo{};
+		//for (int i = 0; i < facesInfo_rgb.size(); i++) {
+		//	FaceInfo faceInfo_rgb = facesInfo_rgb[i];
+		//	int x = (int)faceInfo_rgb.bbox.xmin;
+		//	int y = (int)faceInfo_rgb.bbox.ymin;
+		//	int w = (int)(faceInfo_rgb.bbox.xmax - faceInfo_rgb.bbox.xmin + 1);
+		//	int h = (int)(faceInfo_rgb.bbox.ymax - faceInfo_rgb.bbox.ymin + 1);
+		//	stringstream str_x, str_y, str_h, str_w;
+		//	str_x << x;
+		//	str_y << y;
+		//	str_h << h;
+		//	str_w << w;
+		//	putText(rgb_cameraFrame, "x:"+ str_x.str()+",y:"+str_y.str()+",h:"+ str_h.str() + ",w:" + str_w.str(), cv::Point(x, y), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+		//	cv::rectangle(rgb_cameraFrame, cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0), 1);
+
+		//	int area = w * h;
+
+		//	if (0 == i)
+		//	{
+		//		maxFaceInfo_rgb = faceInfo_rgb;
+		//	}
+		//	else
+		//	{
+		//		int max_w = (int)(maxFaceInfo_rgb.bbox.xmax - maxFaceInfo_rgb.bbox.xmin + 1);
+		//		int max_h = (int)(maxFaceInfo_rgb.bbox.ymax - maxFaceInfo_rgb.bbox.ymin + 1);
+		//		int max_area = max_w * max_h;
+		//		if (area > max_area)
+		//		{
+		//			maxFaceInfo_rgb = faceInfo_rgb;
+		//		}
+		//	}
+		//}
+		//putText(rgb_cameraFrame, "maxFace", Point(maxFaceInfo_rgb.bbox.xmin, maxFaceInfo_rgb.bbox.ymin-20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+		
+		/*for (int i = 0; i < facesInfo_ir.size(); i++) {
 			FaceInfo faceInfo_ir = facesInfo_ir[i];
 			int x = (int)faceInfo_ir.bbox.xmin;
 			int y = (int)faceInfo_ir.bbox.ymin;
 			int w = (int)(faceInfo_ir.bbox.xmax - faceInfo_ir.bbox.xmin + 1);
 			int h = (int)(faceInfo_ir.bbox.ymax - faceInfo_ir.bbox.ymin + 1);
 			cv::rectangle(ir_cameraFrame, cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0), 1);
-		}
+		}*/
+
+		drawRectangle(ir_cameraFrame, facesInfo_ir);
 
 		if (facesInfo_rgb.size() > 0 && facesInfo_ir.size() > 0 && facesInfo_rgb.size() == facesInfo_ir.size())
 		{
@@ -180,15 +184,17 @@ int main(int argc, char **argv)
 				clip_h = max_h + (max_y - clip_y) + (rgb_cameraFrame.rows - (max_h + max_h)) * 0.5;
 			}*/
 
-			int clip_x = org_ir_cameraFrame.cols * 0.25;
+			/*int clip_x = org_ir_cameraFrame.cols * 0.25;
 			int clip_y = org_ir_cameraFrame.rows * 0.25;
 			int clip_w = org_ir_cameraFrame.cols * 0.65;
 			int clip_h = org_ir_cameraFrame.rows * 0.65;
 
 			Rect clipArea = Rect(clip_x, clip_y, clip_w, clip_h);
-			Mat clipFace = org_ir_cameraFrame(clipArea);
+			Mat clipFace = org_ir_cameraFrame(clipArea);*/
+
 			Mat clipFace_resize;
-			resize(clipFace, clipFace_resize, Size(150, 150));
+			//resize(clipFace, clipFace_resize, Size(150, 150));
+			util::cropArea4Flow(org_ir_cameraFrame, clipFace_resize);
 			cvtColor(clipFace_resize, ir_gray, CV_BGR2GRAY);
 
 			/*Mat rgb_flow_frame;
@@ -216,12 +222,18 @@ int main(int argc, char **argv)
 						feature.push_back(float(flowHist[i]));
 					}*/
 
-					Mat featureMat, ir_motion2color_gray;
+					/*Mat featureMat, ir_motion2color_gray;
 					cvtColor(ir_motion2color, ir_motion2color_gray, CV_BGR2GRAY);
 					UniformRotInvLBPFeature(ir_motion2color_gray, Size(4, 4), featureMat);
-					featureMat.convertTo(featureMat, CV_32F);
+					featureMat.convertTo(featureMat, CV_32F);*/
+
+					Mat featureMat;
+					computeLBPFeature(ir_motion2color, featureMat);
 					vector<float> feature;
 					feature.assign((float*)featureMat.datastart, (float*)featureMat.dataend);
+
+					/*vector<float> feature;
+					computeLBPFeature(ir_motion2color, feature);*/
 					
 					if (startSampling)
 					{

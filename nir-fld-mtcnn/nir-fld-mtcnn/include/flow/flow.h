@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "opencv2/opencv.hpp"
+#include <lbp/lbp3.h>
 
 using namespace cv;
 using namespace std;
@@ -27,12 +28,14 @@ namespace flow {
 	};
 
 	void makecolorwheel(vector<Scalar> &colorwheel);
-	void motionToColor(Mat flow, Mat &color);
-	void drawArrow(cv::Mat& img, cv::Point pStart, cv::Point pEnd, int len, int alpha,
+	void motionToColor(Mat& flow, Mat &color);
+	void drawArrow(cv::Mat& img, cv::Point& pStart, cv::Point& pEnd, int len, int alpha,
 		cv::Scalar& color, int thickness = 1, int lintType = 8);
-	void motionToVectorField(Mat img, Mat flow);
-	vector<int> calcFlowAngleHist(Mat flow, FLOW_HIST_TYPE flowHistType);
-	vector<float> extractFlowAnglFeature(Mat flow, SAMPLE_MARGIN sampleMargin);
+	void motionToVectorField(Mat& img, Mat& flow);
+	vector<int> calcFlowAngleHist(Mat& flow, FLOW_HIST_TYPE flowHistType);
+	vector<float> extractFlowAnglFeature(Mat& flow, SAMPLE_MARGIN sampleMargin);
+	void computeLBPFeature(Mat& motion2color, Mat& featureMat);
+	void computeLBPFeature(Mat& motion2color, vector<float>& feature);
 }
 
 

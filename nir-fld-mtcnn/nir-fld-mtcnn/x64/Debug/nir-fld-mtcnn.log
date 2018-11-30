@@ -1,0 +1,3 @@
+﻿  main.cpp
+e:\srcs\anti-spoofing\nir-fld-mtcnn\nir-fld-mtcnn\src\main.cpp(68): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+  nir-fld-mtcnn.vcxproj -> E:\srcs\anti-spoofing\nir-fld-mtcnn\x64\Debug\nir-fld-mtcnn.exe
