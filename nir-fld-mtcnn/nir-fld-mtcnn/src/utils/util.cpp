@@ -305,7 +305,7 @@ string util::cf_NextdirName(string mainDir)
 
 		vector<string> subFiles;
 		cf_findFileFromDir2(subMainPath, subFiles);
-		if (subFiles.size() >= 5000)
+		if (subFiles.size() >= 1000)
 		{
 			endDir += 1;
 		}
@@ -343,6 +343,7 @@ string util::cf_NextFileName(string dirName)
 	return nextFileName;
 }
 
+// 带HUB的近红外双摄像头YUV，目前最大支持640x480，帧率最大只有15 FPS
 void util::getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<Mat>& rgb_cameraFrames, vector<Mat>& ir_cameraFrames, int frame_num, int margin_frame)
 {
 	if (frame_num < 1)
@@ -387,6 +388,44 @@ void util::getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<M
 		else
 			break;
 	}
+}
+
+void util::getDetectFaceArea(Mat& img, Rect& rect)
+{
+	int height = img.rows;
+	int width = img.cols;
+
+	int xmin = width * 0.2;
+	int ymin = height * 0.1;
+	int xmax = width * 0.8;
+	int ymax = height;
+	rect = Rect(xmin, ymin, xmax-xmin, ymax-ymin);
+}
+
+
+//判断rect1是否在rect2里面
+bool util::isInside(Rect rect1, Rect rect2)
+{
+	return (rect1 == (rect1&rect2)); // &：交集； |：并集
+}
+
+float util::rectIOU(const cv::Rect& rectA, const cv::Rect& rectB) {
+	if (rectA.x > rectB.x + rectB.width) { return 0.; }
+	if (rectA.y > rectB.y + rectB.height) { return 0.; }
+	if ((rectA.x + rectA.width) < rectB.x) { return 0.; }
+	if ((rectA.y + rectA.height) < rectB.y) { return 0.; }
+	float colInt = min(rectA.x + rectA.width, rectB.x + rectB.width) - max(rectA.x, rectB.x);
+	float rowInt = min(rectA.y + rectA.height, rectB.y + rectB.height) - max(rectA.y, rectB.y);
+	float intersection = colInt * rowInt;
+	float areaA = rectA.width * rectA.height;
+	float areaB = rectB.width * rectB.height;
+	float intersectionPercent = intersection / (areaA + areaB - intersection);
+
+	/*intersectRect.x = max(rectA.x, rectB.x);
+	intersectRect.y = max(rectA.y, rectB.y);
+	intersectRect.width = min(rectA.x + rectA.width, rectB.x + rectB.width) - intersectRect.x;
+	intersectRect.height = min(rectA.y + rectA.height, rectB.y + rectB.height) - intersectRect.y;*/
+	return intersectionPercent;
 }
 
 

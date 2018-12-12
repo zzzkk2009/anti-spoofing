@@ -51,13 +51,13 @@ void cropFace4Flow(Mat& img, FaceInfo& faceInfo, Rect& cropInfo, int padding)
 	float ymin = faceInfo.bbox.ymin;
 	float ymax = faceInfo.bbox.ymax;
 
-	float img_xmax = img.rows;
-	float img_ymax = img.cols;
+	float img_xmax = img.cols;
+	float img_ymax = img.rows;
 
 	int clip_xmin = xmin < padding ? 0 : xmin - padding;
 	int clip_ymin = ymin < padding ? 0 : ymin - padding;
-	int clip_xmax = img_xmax - xmax < padding ? img_xmax : xmax + padding;
-	int clip_ymax = img_ymax - ymax < padding ? img_ymax : ymax + padding;
+	int clip_xmax = (img_xmax - xmax) < padding ? img_xmax : xmax + padding;
+	int clip_ymax = (img_ymax - ymax) < padding ? img_ymax : ymax + padding;
 	int clip_w = clip_xmax - clip_xmin;
 	int clip_h = clip_ymax - clip_ymin;
 
@@ -67,38 +67,42 @@ void cropFace4Flow(Mat& img, FaceInfo& faceInfo, Rect& cropInfo, int padding)
 FaceInfo drawRectangle(Mat& img, vector<FaceInfo>& v)
 {
 	FaceInfo maxFaceInfo = FaceInfo{};
-	for (int i = 0; i < v.size(); i++) {
-		FaceInfo faceInfo = v[i];
-		int x = (int)faceInfo.bbox.xmin;
-		int y = (int)faceInfo.bbox.ymin;
-		int w = (int)(faceInfo.bbox.xmax - faceInfo.bbox.xmin + 1);
-		int h = (int)(faceInfo.bbox.ymax - faceInfo.bbox.ymin + 1);
-		stringstream str_x, str_y, str_h, str_w;
-		str_x << x;
-		str_y << y;
-		str_h << h;
-		str_w << w;
-		putText(img, "x:" + str_x.str() + ",y:" + str_y.str() + ",h:" + str_h.str() + ",w:" + str_w.str(), cv::Point(x, y), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
-		cv::rectangle(img, cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0), 1);
+	if (!v.empty())
+	{
+		for (int i = 0; i < v.size(); i++) {
+			FaceInfo faceInfo = v[i];
+			int x = (int)faceInfo.bbox.xmin;
+			int y = (int)faceInfo.bbox.ymin;
+			int w = (int)(faceInfo.bbox.xmax - faceInfo.bbox.xmin + 1);
+			int h = (int)(faceInfo.bbox.ymax - faceInfo.bbox.ymin + 1);
+			stringstream str_x, str_y, str_h, str_w;
+			str_x << x;
+			str_y << y;
+			str_h << h;
+			str_w << w;
+			putText(img, "x:" + str_x.str() + ",y:" + str_y.str() + ",h:" + str_h.str() + ",w:" + str_w.str(), cv::Point(x, y), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+			cv::rectangle(img, cv::Rect(x, y, w, h), cv::Scalar(0, 255, 0), 1);
 
-		int area = w * h;
+			int area = w * h;
 
-		if (0 == i)
-		{
-			maxFaceInfo = faceInfo;
-		}
-		else
-		{
-			int max_w = (int)(maxFaceInfo.bbox.xmax - maxFaceInfo.bbox.xmin + 1);
-			int max_h = (int)(maxFaceInfo.bbox.ymax - maxFaceInfo.bbox.ymin + 1);
-			int max_area = max_w * max_h;
-			if (area > max_area)
+			if (0 == i)
 			{
 				maxFaceInfo = faceInfo;
 			}
+			else
+			{
+				int max_w = (int)(maxFaceInfo.bbox.xmax - maxFaceInfo.bbox.xmin + 1);
+				int max_h = (int)(maxFaceInfo.bbox.ymax - maxFaceInfo.bbox.ymin + 1);
+				int max_area = max_w * max_h;
+				if (area > max_area)
+				{
+					maxFaceInfo = faceInfo;
+				}
+			}
 		}
+		putText(img, "maxFace", Point(maxFaceInfo.bbox.xmin, maxFaceInfo.bbox.ymin - 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
 	}
-	putText(img, "maxFace", Point(maxFaceInfo.bbox.xmin, maxFaceInfo.bbox.ymin - 20), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+	
 	return maxFaceInfo;
 }
 

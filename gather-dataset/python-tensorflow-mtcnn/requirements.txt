@@ -1,0 +1,4 @@
+tensorflow
+numpy
+easydict
+opencv-python

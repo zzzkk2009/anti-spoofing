@@ -35,6 +35,9 @@ namespace util {
 	T fill_cast(const S& v, const int width, const char c);
 
 	void getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<Mat>& rgb_cameraFrames, vector<Mat>& ir_cameraFrames, int frame_num = 1, int margin_frame = 0);
+	void getDetectFaceArea(Mat& img, Rect& rect);
+	bool isInside(Rect rect1, Rect rect2);
+	float rectIOU(const cv::Rect& rectA, const cv::Rect& rectB);
 
 }
 

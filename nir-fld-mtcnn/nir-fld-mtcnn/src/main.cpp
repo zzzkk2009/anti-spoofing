@@ -7,6 +7,7 @@
 using namespace cv;
 using namespace std;
 using namespace flow;
+using namespace shuffle;
 
 int main(int argc, char **argv)
 {
@@ -18,7 +19,7 @@ int main(int argc, char **argv)
 	//Create predictor
 	string prefix = "./model/mx-flow-shuffle/";
 	string symbol_file = prefix + "checkpoint_c48x64_1w5k/checkpoint_c48x64_1w5k-symbol.json";
-	string params_file = prefix + "checkpoint_c48x64_1w5k/checkpoint_c48x64_1w5k-1000.params";
+	string params_file = prefix + "checkpoint_c48x64_1w5k/checkpoint_c48x64_1w5k-30000.params";
 	string synset_file = prefix + "synset.txt";
 	PredictorHandle predictor = 0;
 	vector<int> train_img_heights = {64}; // {32, 64}
@@ -26,7 +27,7 @@ int main(int argc, char **argv)
 	mx_uint predict_img_height = 64, predict_img_width = 48;
 	int status = initPredictor(predictor, symbol_file, params_file, predict_img_height, predict_img_width);
 	// Load synsets
-	vector<string> synsets = loadSynsets(synset_file.c_str());
+	//vector<string> synsets = loadSynsets(synset_file.c_str());
 
 	float factor = 0.709f;
 	float threshold[3] = { 0.7f, 0.6f, 0.6f };
@@ -37,6 +38,8 @@ int main(int argc, char **argv)
 	VideoCapture ir_camera(1);
 
 	cv::TickMeter tm;
+
+	Rect detectFaceArea;
 
 	try
 	{
@@ -51,6 +54,13 @@ int main(int argc, char **argv)
 			Mat org_rgb_cameraFrame_0 = rgb_cameraFrame_0.clone();
 			Mat org_ir_cameraFrame_0 = ir_cameraFrame_0.clone();
 
+			if (detectFaceArea.empty())
+			{
+				util::getDetectFaceArea(org_rgb_cameraFrame_0, detectFaceArea);
+			}
+			cv::rectangle(org_rgb_cameraFrame_0, detectFaceArea, cv::Scalar(255, 0, 0), 1);
+			cv::rectangle(org_ir_cameraFrame_0, detectFaceArea, cv::Scalar(255, 0, 0), 1);
+
 			tm.reset();
 			tm.start();
 
@@ -60,6 +70,7 @@ int main(int argc, char **argv)
 
 			vector<FaceInfo> facesInfo_rgb = detector.Detect_mtcnn(rgb_cameraFrame_0, minSize, threshold, factor, 3);
 			vector<FaceInfo> facesInfo_ir = detector.Detect_mtcnn(ir_cameraFrame_0, minSize, threshold, factor, 3);
+			//vector<FaceInfo> facesInfo_ir;
 
 			std::cout << "detect time," << (double)(cv::getTickCount() - t) / cv::getTickFrequency() << "s"
 				<< std::endl;
@@ -71,25 +82,65 @@ int main(int argc, char **argv)
 			cv::putText(org_rgb_cameraFrame_0, ss.str() + "FPS",
 				cv::Point(20, 45), 4, 0.5, cv::Scalar(0, 0, 125));
 
-			FaceInfo maxFaceInfo_rgb = drawRectangle(org_rgb_cameraFrame_0, facesInfo_rgb);
-			FaceInfo maxFaceInfo_ir = drawRectangle(org_ir_cameraFrame_0, facesInfo_ir);
-
-			if (facesInfo_rgb.size() > 0 && facesInfo_ir.size() > 0 && facesInfo_rgb.size() == facesInfo_ir.size())
+			//只要有一个摄像头检测到人脸，就需要进行活体判断
+			if (!facesInfo_rgb.empty() || !facesInfo_ir.empty())
 			{
-
-			}
-			else
-			{
-				//cv::putText(rgb_cameraFrame, "non-living", cv::Point(280, 45), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
-				cout << "non-living" << endl;
-			}
-
-
-			if (maxFaceInfo_rgb.bbox.score > 0)
-			{
-				FaceSize rgb_faceSize = getFaceSize(maxFaceInfo_rgb);
-				if (rgb_faceSize.height >= 64 && rgb_faceSize.width >= 48)
+				if (!facesInfo_rgb.empty())
 				{
+					FaceInfo maxFaceInfo_rgb = drawRectangle(org_rgb_cameraFrame_0, facesInfo_rgb);
+					Rect maxFace_rgb = FaceInfo2Rect(maxFaceInfo_rgb);
+					//没在指定矩形框内不检测
+					if (!util::isInside(maxFace_rgb, detectFaceArea))
+						continue;
+
+					//电子屏幕攻击(也有可能是人脸检测算法在近红外上精度比较低)
+					if (facesInfo_ir.empty())
+					{
+						cv::putText(org_rgb_cameraFrame_0, "spoofing(ir_empty)", cv::Point(280, 30), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+						cout << "non-living(ir_empty)" << endl;
+						continue;
+					}
+					
+				}
+
+				//可能黑暗条件
+				if (facesInfo_rgb.empty() && !facesInfo_ir.empty())
+				{
+					continue;
+				}
+
+				FaceInfo maxFaceInfo_rgb = drawRectangle(org_rgb_cameraFrame_0, facesInfo_rgb);
+				//for (int i = 0; i < facesInfo_rgb.size(); i++)
+				//{
+				//	FaceInfo faceInfo = facesInfo_rgb[i];
+				//	faceInfo.bbox.xmin += 20;
+				//	faceInfo.bbox.xmax += 20;
+				//	faceInfo.bbox.ymin -= 10;
+				//	faceInfo.bbox.ymax -= 10;
+
+				//	/*float _xmin = faceInfo.bbox.xmin + 20;
+				//	float _xmax = faceInfo.bbox.xmax + 20;
+				//	float _ymin = faceInfo.bbox.ymin - 10;
+				//	float _ymax = faceInfo.bbox.ymax - 10;
+				//	FaceInfo info;*/
+				//	facesInfo_ir.push_back(faceInfo);
+				//}
+				FaceInfo maxFaceInfo_ir = drawRectangle(org_ir_cameraFrame_0, facesInfo_ir);
+
+				Rect maxFace_rgb = FaceInfo2Rect(maxFaceInfo_rgb);
+				Rect maxFace_ir = FaceInfo2Rect(maxFaceInfo_ir);
+
+				//没在指定矩形框内不检测
+				if (!util::isInside(maxFace_rgb, detectFaceArea) || !util::isInside(maxFace_ir, detectFaceArea))
+					continue;
+
+				FaceSize rgb_faceSize = getFaceSize(maxFaceInfo_rgb);
+				//太小的人脸不检测
+				if (rgb_faceSize.height >= predict_img_width && rgb_faceSize.width >= predict_img_height) 
+				{
+					//TODO: 可见光与近红外人脸IOU低于阈值，则判断为非活体
+
+
 					//稠密光流法
 					if (rgb_cameraFrames.size() > 1)
 					{
@@ -127,24 +178,23 @@ int main(int argc, char **argv)
 									motionToColor(rgb_flow, rgb_motion2color);
 									motionToVectorField(rgb_prev_crop_img, rgb_flow);
 									imshow("rgb_motion2color" + img_size_i, rgb_motion2color);
-									//imshow("rgb_prev_crop_img"+ img_size_i, rgb_prev_crop_img);
+									imshow("rgb_prev_crop_img"+ img_size_i, rgb_prev_crop_img);
 
 									std::swap(rgb_prev_crop_img_gray, rgb_cur_crop_img_gray);
 
-									string label_synset_str = "";
-									int iResponse = predict(predictor, synsets, rgb_motion2color, label_synset_str, predict_img_height, predict_img_width);
+									int iResponse = predict(predictor, rgb_motion2color);
 
 									stringstream str_fResponse;
 									str_fResponse << iResponse;
-									cv::putText(org_rgb_cameraFrame_0, "fResponse:" + str_fResponse.str(), cv::Point(450, 45), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+									cv::putText(org_rgb_cameraFrame_0, "fResponse:" + str_fResponse.str(), cv::Point(450, 30), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
 
 									if (1 == iResponse)
 									{
-										cv::putText(org_rgb_cameraFrame_0, "living(flow)", cv::Point(280, 45), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+										cv::putText(org_rgb_cameraFrame_0, "pass(flow)", cv::Point(280, 30), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
 									}
 									else
 									{
-										cv::putText(org_rgb_cameraFrame_0, "non-living(flow)", cv::Point(280, 45), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+										cv::putText(org_rgb_cameraFrame_0, "spoofing(flow)", cv::Point(280, 30), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
 										cout << "non-living" << endl;
 									}
 
@@ -166,6 +216,12 @@ int main(int argc, char **argv)
 					}
 				}
 			}
+			/*else
+			{
+				cv::putText(org_rgb_cameraFrame_0, "non-living", cv::Point(280, 45), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+				cout << "non-living" << endl;
+			}*/
+
 
 
 			string showCtrlSs = "startSampling:";
