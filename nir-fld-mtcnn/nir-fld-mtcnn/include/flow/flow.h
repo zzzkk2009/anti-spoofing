@@ -28,6 +28,7 @@ namespace flow {
 	};
 
 	void makecolorwheel(vector<Scalar> &colorwheel);
+	bool isErrorFlow(Mat& flow);
 	void motionToColor(Mat& flow, Mat &color);
 	void drawArrow(cv::Mat& img, cv::Point& pStart, cv::Point& pEnd, int len, int alpha,
 		cv::Scalar& color, int thickness = 1, int lintType = 8);

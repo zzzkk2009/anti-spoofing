@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include "opencv2/opencv.hpp"
+#include <base/base.h>
 using namespace std;
 using namespace cv; 
 
@@ -25,6 +26,10 @@ typedef struct FaceBox {
 	float ymax;
 	float score;
 } FaceBox;
+
+//landmark [0:4]是五个关键点在水平方向上的坐标(列坐标)，landmark [5:9]是五个关键点在垂直方向上的坐标（行坐标）。
+//即，（landmark [0]，landmark[1]）表示左眼的坐标，（landmark [2]，landmark[3]）表示右眼的坐标，（landmark [4]，landmark[5]）表示鼻子的坐标，
+//（landmark [6]，landmark[7]）表示左嘴角的坐标，（landmark [8]，landmark[9]）表示右嘴角的坐标。
 typedef struct FaceInfo {
 	float bbox_reg[4];
 	float landmark_reg[10];
@@ -39,10 +44,18 @@ typedef struct FaceSize {
 bool CompareBBox(const FaceInfo & a, const FaceInfo & b);
 
 FaceInfo drawRectangle(Mat& img, vector<FaceInfo>& v);
+FaceInfo_ncnn getMaxFaceInfo(vector<FaceInfo_ncnn>& v);
 Rect FaceInfo2Rect(FaceInfo& faceInfo);
 void cropFace4Flow(Mat& img, FaceInfo& faceInfo, Rect& cropInfo, int padding = 10);
+void amendFaceAxis(Mat org_img, vector<FaceInfo>& facesInfo, int crop_width, int crop_height);
+void amendFaceAxis(Mat org_img, vector<FaceInfo_ncnn>& facesInfo, int crop_width, int crop_height);
 float faceInfoArea(FaceInfo& faceInfo);
 FaceSize getFaceSize(FaceInfo& faceInfo);
+void FaceInfoNcnn2FaceInfo(FaceInfo_ncnn& fi_ncnn, FaceInfo& fi);
+void FaceInfoNcnn2FaceInfo(vector<FaceInfo_ncnn>& fis_ncnn, vector<FaceInfo>& fis);
+void FaceInfo2FaceInfoNcnn(FaceInfo& fi, FaceInfo_ncnn& fi_ncnn);
+void FaceInfo2FaceInfoNcnn(vector<FaceInfo>& fis, vector<FaceInfo_ncnn>& fis_ncnn);
+bool isFacingCamera(FaceInfo& faceInfo);//是否面向摄像头(只检测正脸)
 
 class MTCNN {
 public:

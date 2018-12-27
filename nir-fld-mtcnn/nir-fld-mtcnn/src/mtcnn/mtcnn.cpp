@@ -64,6 +64,49 @@ void cropFace4Flow(Mat& img, FaceInfo& faceInfo, Rect& cropInfo, int padding)
 	cropInfo = Rect(clip_xmin, clip_ymin, clip_w, clip_h);
 }
 
+//修正人脸坐标
+void amendFaceAxis(Mat org_img, vector<FaceInfo>& facesInfo, int crop_width, int crop_height) {
+	int height = org_img.rows;
+	int width = org_img.cols;
+
+	int offset_x = (width - crop_width) / 2;
+	int offset_y = (height - crop_height) / 2;
+
+	for (int i = 0; i < facesInfo.size(); i++) {
+		int offset_x = (width - crop_width) / 2;
+		facesInfo[i].bbox.xmin += offset_x;
+		facesInfo[i].bbox.ymin += offset_y;
+		facesInfo[i].bbox.xmax += offset_x;
+		facesInfo[i].bbox.ymax += offset_y;
+		for (int j = 0; j < 10; j++) {
+			if (j % 2 == 0) {
+				facesInfo[i].landmark[j] += offset_x;
+			}
+			else {
+				facesInfo[i].landmark[j] += offset_y;
+			}
+		}
+		
+	}
+}
+
+//修正人脸坐标
+void amendFaceAxis(Mat org_img, vector<FaceInfo_ncnn>& facesInfo, int crop_width, int crop_height) {
+	int height = org_img.rows;
+	int width = org_img.cols;
+
+	int offset_x = (width - crop_width) / 2;
+	int offset_y = (height - crop_height) / 2;
+
+	for (int i = 0; i < facesInfo.size(); i++) {
+		int offset_x = (width - crop_width) / 2;
+		facesInfo[i].x[0] += offset_x;
+		facesInfo[i].y[0] += offset_y;
+		facesInfo[i].x[1] += offset_x;
+		facesInfo[i].y[1] += offset_y;
+	}
+}
+
 FaceInfo drawRectangle(Mat& img, vector<FaceInfo>& v)
 {
 	FaceInfo maxFaceInfo = FaceInfo{};
@@ -104,6 +147,104 @@ FaceInfo drawRectangle(Mat& img, vector<FaceInfo>& v)
 	}
 	
 	return maxFaceInfo;
+} 
+
+FaceInfo_ncnn getMaxFaceInfo(vector<FaceInfo_ncnn>& v)
+{
+	FaceInfo_ncnn maxFaceInfo = FaceInfo_ncnn{};
+	if (!v.empty())
+	{
+		for (int i = 0; i < v.size(); i++) {
+			FaceInfo_ncnn faceInfo = v[i];
+			int x = (int)faceInfo.x[0];
+			int y = (int)faceInfo.y[0];
+			int w = (int)(faceInfo.x[1] - faceInfo.x[0] + 1);
+			int h = (int)(faceInfo.y[1] - faceInfo.y[0] + 1);
+			int area = w * h;
+
+			if (0 == i)
+			{
+				maxFaceInfo = faceInfo;
+			}
+			else
+			{
+				int max_w = (int)(maxFaceInfo.x[1] - maxFaceInfo.x[0] + 1);
+				int max_h = (int)(maxFaceInfo.y[1] - maxFaceInfo.y[0] + 1);
+				int max_area = max_w * max_h;
+				if (area > max_area)
+				{
+					maxFaceInfo = faceInfo;
+				}
+			}
+		}
+	}
+
+	return maxFaceInfo;
+}
+
+void FaceInfoNcnn2FaceInfo(FaceInfo_ncnn& fi_ncnn, FaceInfo& fi) {
+	fi.bbox.score = fi_ncnn.score;
+	fi.bbox.xmin = fi_ncnn.x[0];
+	fi.bbox.xmax = fi_ncnn.x[1];
+	fi.bbox.ymin = fi_ncnn.y[0];
+	fi.bbox.ymax = fi_ncnn.y[1];
+	std::copy(std::begin(fi.bbox_reg), std::end(fi.bbox_reg), std::begin(fi_ncnn.regreCoord));
+}
+
+void FaceInfoNcnn2FaceInfo(vector<FaceInfo_ncnn>& fis_ncnn, vector<FaceInfo>& fis) {
+	for (int i = 0; i < fis_ncnn.size(); i++) {
+		FaceInfo fi;
+		FaceInfoNcnn2FaceInfo(fis_ncnn[i], fi);
+		fis.push_back(fi);
+	}
+}
+
+void FaceInfo2FaceInfoNcnn(FaceInfo& fi, FaceInfo_ncnn& fi_ncnn) {
+	fi_ncnn.score = fi.bbox.score;
+	fi_ncnn.x[0] = fi.bbox.xmin;
+	fi_ncnn.x[1] = fi.bbox.xmax;
+	fi_ncnn.y[0] = fi.bbox.ymin;
+	fi_ncnn.y[1] = fi.bbox.ymax;
+	for (int i = 0; i < 10; i++) {
+		fi_ncnn.landmark[i] = fi.landmark[i];
+	}
+}
+
+void FaceInfo2FaceInfoNcnn(vector<FaceInfo>& fis, vector<FaceInfo_ncnn>& fis_ncnn) {
+	for (int i = 0; i < fis.size(); i++) {
+		FaceInfo_ncnn fi_ncnn;
+		FaceInfo2FaceInfoNcnn(fis[i], fi_ncnn);
+		fis_ncnn.push_back(fi_ncnn);
+	}
+}
+
+bool isFacingCamera(FaceInfo& faceInfo) {
+	int xmin = faceInfo.bbox.xmin;
+	int ymin = faceInfo.bbox.ymin;
+	int xmax = faceInfo.bbox.xmax;
+	int ymax = faceInfo.bbox.ymax;
+	int width = xmax - xmin;
+	int height = ymax - ymin;
+	Point2f center = Point2f(xmin + width / 2, ymin + height / 2);
+	Point2f leftEye = Point2f(faceInfo.landmark[0], faceInfo.landmark[1]);
+	Point2f rightEye = Point2f(faceInfo.landmark[2], faceInfo.landmark[3]);
+	Point2f nose = Point2f(faceInfo.landmark[4], faceInfo.landmark[5]);
+	Point2f leftMouth = Point2f(faceInfo.landmark[6], faceInfo.landmark[7]);
+	Point2f rightMouth = Point2f(faceInfo.landmark[8], faceInfo.landmark[9]);
+
+	int eyeDistance = abs(leftEye.x - rightEye.x);
+	float ratio_x = eyeDistance * 1.0f / width;
+	int mouth2EyeDistance = abs(leftMouth.y - leftEye.y);
+	float ratio_y = mouth2EyeDistance * 1.0f / height;
+
+	if (abs(nose.x - center.x) < 10) {
+		return true;
+	}
+
+	/*if (abs(leftEye.y - rightEye.y) < 5 && ratio_x > 0.4 && ratio_y > 0.4) {
+		return true;
+	}*/
+	return false;
 }
 
 MTCNN::MTCNN(const string& proto_model_dir) {

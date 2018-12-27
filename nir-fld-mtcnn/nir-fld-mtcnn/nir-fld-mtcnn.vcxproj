@@ -73,12 +73,18 @@
     <Import Project="..\lib\3rdParty\mklml\mklml_debug.props" />
     <Import Project="..\lib\3rdParty\dmlc-core\dmlc-core-debug.props" />
     <Import Project="..\lib\3rdParty\OpenBLAS0.2.19\openblas_debug.props" />
+    <Import Project="..\lib\3rdParty\ncnn\ncnn_debug.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\lib\3rdParty\OpenCV3.4.3\OpenCV3.4.3.props" />
     <Import Project="local.props" />
     <Import Project="..\lib\3rdParty\fftw\fftw.props" />
+    <Import Project="..\lib\3rdParty\ncnn\ncnn.props" />
+    <Import Project="..\lib\3rdParty\mkldnn\mkldnn.props" />
+    <Import Project="..\lib\3rdParty\mklml\mklml.props" />
+    <Import Project="..\lib\3rdParty\mxnet\mxnet.props" />
+    <Import Project="..\lib\3rdParty\OpenBLAS0.2.19\openblas.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -162,15 +168,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\detector\detector.h" />
     <ClInclude Include="include\flow\flow.h" />
+    <ClInclude Include="include\headpose\head_pose_estimation.h" />
     <ClInclude Include="include\lbp\lbp3.h" />
     <ClInclude Include="include\mtcnn\mtcnn.h" />
     <ClInclude Include="include\net\mx_shuffle_predict_2.h" />
     <ClInclude Include="include\svm\svm.h" />
     <ClInclude Include="include\utils\util.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="include\arcface\arcface.h" />
+    <ClInclude Include="include\base\base.h" />
+    <ClInclude Include="include\mtcnn\mtcnn_ncnn.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\arcface\arcface.cpp" />
+    <ClCompile Include="src\base\base.cpp" />
+    <ClCompile Include="src\detector\detector.cpp" />
+    <ClCompile Include="src\headpose\head_pose_estimation.cpp" />
+    <ClCompile Include="src\main2.cpp" />
+    <ClCompile Include="src\mtcnn\mtcnn_ncnn.cpp" />
     <ClCompile Include="src\main_bak.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -187,10 +204,22 @@
     <ClCompile Include="src\net\mx_shuffle_predict_2.cpp" />
     <ClCompile Include="src\svm\svm.cpp" />
     <ClCompile Include="src\utils\util.cpp" />
-    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="local.props" />
+    <None Include="model\insightface\insightface_ncnn\det1.bin" />
+    <None Include="model\insightface\insightface_ncnn\det1.param" />
+    <None Include="model\insightface\insightface_ncnn\det2.bin" />
+    <None Include="model\insightface\insightface_ncnn\det2.param" />
+    <None Include="model\insightface\insightface_ncnn\det3.bin" />
+    <None Include="model\insightface\insightface_ncnn\det3.param" />
+    <None Include="model\insightface\insightface_ncnn\det4.bin" />
+    <None Include="model\insightface\insightface_ncnn\det4.param" />
+    <None Include="model\insightface\insightface_ncnn\mobilefacenet.bin" />
+    <None Include="model\insightface\insightface_ncnn\mobilefacenet.param" />
+    <None Include="model\insightface\MobileFaceNet\model-0000.params" />
+    <None Include="model\insightface\MobileFaceNet\model-symbol.json" />
+    <None Include="src\arcface\Makefile" />
     <None Include="src\mtcnn\model\det1.prototxt" />
     <None Include="src\mtcnn\model\det1_.caffemodel" />
     <None Include="src\mtcnn\model\det1_.prototxt" />

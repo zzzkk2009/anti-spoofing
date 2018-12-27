@@ -36,6 +36,21 @@
     <ClInclude Include="include\net\mx_shuffle_predict_2.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\mtcnn\mtcnn_ncnn.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arcface\arcface.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\base\base.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\detector\detector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\headpose\head_pose_estimation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -62,10 +77,25 @@
     <ClCompile Include="src\main150.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="src\main_bak.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\main_bak.cpp">
+    <ClCompile Include="src\arcface\arcface.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mtcnn\mtcnn_ncnn.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\base\base.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\detector\detector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\headpose\head_pose_estimation.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -81,5 +111,28 @@
     <None Include="src\mtcnn\model\det3.prototxt" />
     <None Include="src\mtcnn\model\det3-half.caffemodel" />
     <None Include="src\mtcnn\model\det3-half.prototxt" />
+    <None Include="model\insightface\insightface_ncnn\det1.bin">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="model\insightface\insightface_ncnn\det2.bin">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="model\insightface\insightface_ncnn\det3.bin">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="model\insightface\insightface_ncnn\det4.bin">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="model\insightface\insightface_ncnn\mobilefacenet.bin">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="model\insightface\MobileFaceNet\model-0000.params" />
+    <None Include="model\insightface\MobileFaceNet\model-symbol.json" />
+    <None Include="model\insightface\insightface_ncnn\det1.param" />
+    <None Include="model\insightface\insightface_ncnn\det2.param" />
+    <None Include="model\insightface\insightface_ncnn\det3.param" />
+    <None Include="model\insightface\insightface_ncnn\det4.param" />
+    <None Include="model\insightface\insightface_ncnn\mobilefacenet.param" />
+    <None Include="src\arcface\Makefile" />
   </ItemGroup>
 </Project>

@@ -25,8 +25,8 @@
 
 # .lst文件样例：第一列是index，第二列是label，第三列是图像路径
 # python im2rec.py --recursive --exts=.png --list train train
-# python im2rec.py --recursive --exts=.png --list test test
-# python im2rec.py ./test.lst test
+# python im2rec.py --recursive --exts=.png --list valid valid
+# python im2rec.py ./valid.lst valid
 # python im2rec.py ./train.lst train
 
 from __future__ import print_function

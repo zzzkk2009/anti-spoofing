@@ -1,12 +1,17 @@
 #ifndef __ZK_UTIL_H__
 #define __ZK_UTIL_H__
 
+#define ACCESS _access
+#define MKDIR(a) _mkdir((a))
+
 #include <iostream>
 #include "opencv2/opencv.hpp"
 #include <numeric>
 #include <io.h>
 #include <direct.h>
 #include <fstream>
+#include<time.h>
+#include<string.h>
 
 using namespace cv;
 using namespace std;
@@ -35,10 +40,16 @@ namespace util {
 	T fill_cast(const S& v, const int width, const char c);
 
 	void getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<Mat>& rgb_cameraFrames, vector<Mat>& ir_cameraFrames, int frame_num = 1, int margin_frame = 0);
+	void getFrames(VideoCapture& rgb_camera, vector<Mat>& rgb_cameraFrames, int frame_num, int margin_frame);
 	void getDetectFaceArea(Mat& img, Rect& rect);
+	void getDetectFaceArea2(Mat& img, int r_width, int r_height, Rect& rect);
 	bool isInside(Rect rect1, Rect rect2);
 	float rectIOU(const cv::Rect& rectA, const cv::Rect& rectB);
-
+	string getStrftime();
+	string getStrftime(string format);
+	void getFiles(string path, vector<string>& files);
+	int CreatDir(char *pszDir);
+	void drawMaskLayer(Mat& img);
 }
 
 #endif

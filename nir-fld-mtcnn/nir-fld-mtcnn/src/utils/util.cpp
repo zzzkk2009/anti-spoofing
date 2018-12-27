@@ -156,6 +156,34 @@ void util::gatherDataSet(Mat& img, string mainDir)
 	imwrite(filename, img);
 }
 
+string util::getStrftime() {
+
+	struct tm *ptr;
+	time_t lt;
+	char s[80];
+	lt = time(NULL);
+	ptr = localtime(&lt);
+	strftime(s, sizeof(s), "%Y%m%d%H%M%S", ptr);
+
+	/*time_t t;
+	time(&t);
+	struct tm *tmp_time = localtime(&t);
+	char s[100];
+	strftime(s, sizeof(s), "%04Y%02m%02d%H%M%S", tmp_time);*/
+	std::string str(s);
+	return str;
+}
+
+string util::getStrftime(string format) {
+	struct tm *ptr;
+	time_t lt;
+	char s[80];
+	lt = time(NULL);
+	ptr = localtime(&lt);
+	strftime(s, sizeof(s), format.c_str(), ptr);
+	std::string str(s);
+	return str;
+}
 
 void util::cf_findFileFromDir(string mainDir, vector<string> &files)
 {
@@ -363,7 +391,11 @@ void util::getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<M
 		rgb_camera >> rgb_cameraFrame;
 		ir_camera >> ir_cameraFrame;
 
-		if (rgb_cameraFrame.empty())
+		if (rgb_cameraFrame.empty() || ir_cameraFrame.empty()) {
+			break;
+		}
+
+		/*if (rgb_cameraFrame.empty())
 		{
 			std::cerr << "rgb_cameraFrame empty!!!" << std::endl;
 			getchar();
@@ -375,7 +407,7 @@ void util::getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<M
 			std::cerr << "ir_cameraFrame empty!!!" << std::endl;
 			getchar();
 			exit(2);
-		}
+		}*/
 
 		if (n % (margin_frame + 1) != 0)
 			continue;
@@ -384,6 +416,39 @@ void util::getFrames(VideoCapture& rgb_camera, VideoCapture& ir_camera, vector<M
 		{
 			rgb_cameraFrames.push_back(rgb_cameraFrame);
 			ir_cameraFrames.push_back(ir_cameraFrame);
+		}
+		else
+			break;
+	}
+}
+
+void util::getFrames(VideoCapture& rgb_camera, vector<Mat>& rgb_cameraFrames, int frame_num, int margin_frame)
+{
+	if (frame_num < 1)
+		frame_num = 1;
+	if (margin_frame < 0)
+		margin_frame = 0;
+
+	rgb_cameraFrames.clear();
+
+	int n = -1;
+	while (true)
+	{
+		n++;
+
+		Mat rgb_cameraFrame;
+		rgb_camera >> rgb_cameraFrame;
+
+		if (rgb_cameraFrame.empty()) {
+			break;
+		}
+
+		if (n % (margin_frame + 1) != 0)
+			continue;
+
+		if (rgb_cameraFrames.size() < frame_num)
+		{
+			rgb_cameraFrames.push_back(rgb_cameraFrame);
 		}
 		else
 			break;
@@ -400,6 +465,21 @@ void util::getDetectFaceArea(Mat& img, Rect& rect)
 	int xmax = width * 0.8;
 	int ymax = height;
 	rect = Rect(xmin, ymin, xmax-xmin, ymax-ymin);
+}
+
+void util::getDetectFaceArea2(Mat& img, int r_width, int r_height, Rect& rect)
+{
+	int height = img.rows;
+	int width = img.cols;
+
+	int center_x = width / 2;
+	int center_y = height / 2;
+
+	int xmin = center_x - r_width / 2;
+	int ymin = center_y - r_height / 2;
+	int xmax = center_x + r_width / 2;
+	int ymax = center_y + r_height / 2;
+	rect = Rect(xmin, ymin, xmax - xmin, ymax - ymin);
 }
 
 
@@ -427,6 +507,83 @@ float util::rectIOU(const cv::Rect& rectA, const cv::Rect& rectB) {
 	intersectRect.height = min(rectA.y + rectA.height, rectB.y + rectB.height) - intersectRect.y;*/
 	return intersectionPercent;
 }
+
+/**
+ * @function: 获取path目录下的所有文件名
+ * @param: path - string类型
+ * @result：vector<string>类型
+*/
+void util::getFiles(string path, vector<string>& files)
+{
+	//文件句柄
+	long   hFile = 0;
+	//文件信息
+	struct _finddata_t fileinfo;
+	string p;
+	if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+	{
+		do
+		{
+			//如果是目录,迭代之
+			//如果不是,加入列表
+			if ((fileinfo.attrib &  _A_SUBDIR))
+			{
+				if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+					getFiles(p.assign(path).append("\\").append(fileinfo.name), files);
+			}
+			else
+			{
+				files.push_back(p.assign(path).append("\\").append(fileinfo.name));
+			}
+		} while (_findnext(hFile, &fileinfo) == 0);
+		_findclose(hFile);
+	}
+}
+
+
+int util::CreatDir(char *pszDir)
+{
+	int i = 0;
+	int iRet;
+	int iLen = strlen(pszDir);
+
+	//在末尾加/
+	if (pszDir[iLen - 1] != '\\' && pszDir[iLen - 1] != '/')
+	{
+		pszDir[iLen] = '/';
+		pszDir[iLen + 1] = '\0';
+	}
+
+	// 创建目录
+	for (i = 0; i <= iLen; i++)
+	{
+		if (pszDir[i] == '\\' || pszDir[i] == '/')
+		{
+			pszDir[i] = '\0';
+
+			//如果不存在,创建
+			iRet = ACCESS(pszDir, 0);
+			if (iRet != 0)
+			{
+				iRet = MKDIR(pszDir);
+				if (iRet != 0)
+				{
+					return -1;
+				}
+			}
+			//支持linux,将所有\换成/
+			pszDir[i] = '/';
+		}
+	}
+	return 0;
+}
+
+void util::drawMaskLayer(Mat& img) {
+	cv::Mat color(img.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+	double alpha = 0.8;
+	cv::addWeighted(color, alpha, img, 1.0 - alpha, 0.0, img);
+}
+
 
 
 //void util::saveTrainingData(string dirName, vector<float> v, bool positive)

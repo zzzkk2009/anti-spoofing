@@ -30,6 +30,23 @@ void flow::makecolorwheel(vector<Scalar> &colorwheel)
 	for (i = 0; i < MR; i++) colorwheel.push_back(Scalar(255, 0, 255 - 255 * i / MR));
 }
 
+bool flow::isErrorFlow(Mat& flow) {
+	for (int i = 0; i < flow.rows; ++i)
+	{
+		for (int j = 0; j < flow.cols; ++j)
+		{
+			Vec2f flow_at_point = flow.at<Vec2f>(i, j);
+			float fx = flow_at_point[0];
+			float fy = flow_at_point[1];
+			if (isnan(fx) || isnan(fy) || 0 == fx || 0 == fy ||
+				(fabs(fx) > UNKNOWN_FLOW_THRESH) || (fabs(fy) > UNKNOWN_FLOW_THRESH)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void flow::motionToColor(Mat& flow, Mat &color)
 {
 	if (color.empty())
@@ -50,14 +67,16 @@ void flow::motionToColor(Mat& flow, Mat &color)
 			Vec2f flow_at_point = flow.at<Vec2f>(i, j);
 			float fx = flow_at_point[0];
 			float fy = flow_at_point[1];
+			if (isnan(fx) || isnan(fy)) {
+				continue;
+			}
 			if ((fabs(fx) > UNKNOWN_FLOW_THRESH) || (fabs(fy) > UNKNOWN_FLOW_THRESH))
 				continue;
 			float rad = sqrt(fx * fx + fy * fy);
 			maxrad = maxrad > rad ? maxrad : rad;
-
 		}
 	}
-
+	
 	for (int i = 0; i < flow.rows; ++i)
 	{
 		for (int j = 0; j < flow.cols; ++j)
@@ -67,6 +86,12 @@ void flow::motionToColor(Mat& flow, Mat &color)
 
 			float fx = flow_at_point[0] / maxrad;
 			float fy = flow_at_point[1] / maxrad;
+
+			if (isnan(fx) || isnan(fy)) {
+				data[0] = data[1] = data[2] = 0;
+				continue;
+			}
+
 			if ((fabs(fx) > UNKNOWN_FLOW_THRESH) || (fabs(fy) > UNKNOWN_FLOW_THRESH))
 			{
 				data[0] = data[1] = data[2] = 0;
@@ -74,13 +99,13 @@ void flow::motionToColor(Mat& flow, Mat &color)
 			}
 			float rad = sqrt(fx * fx + fy * fy);
 
-			float angle = atan2(-fy, -fx) / CV_PI;
+			float angle = atan2(-fy, -fx) / CV_PI; // angle: [-1, 1]
 			float fk = (angle + 1.0) / 2.0 * (colorwheel.size() - 1);
 			int k0 = (int)fk;
 			int k1 = (k0 + 1) % colorwheel.size();
 			float f = fk - k0;
 			//f = 0; // uncomment to see original color wheel
-
+			//cout << "1111" << endl;
 			for (int b = 0; b < 3; b++)
 			{
 				float col0 = colorwheel[k0][b] / 255.0;
