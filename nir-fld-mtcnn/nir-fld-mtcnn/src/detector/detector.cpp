@@ -214,7 +214,7 @@ namespace detect
 					//仿真度不高的面具，头盔等；
 					cv::putText(_showImg_rgb, "spoofing(phone)!", cv::Point(200, 30), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(0, 0, 255), 1);
 					cout << "spoofing!" << endl;
-					return 2;
+					return 11;
 				}
 			}
 
@@ -248,46 +248,38 @@ namespace detect
 			ncnn::Mat det1 = preprocess(willDetectFaceArea_rgb_ncnn, maxFaceInfo_ncnn);
 
 			//连续检测为非活体的次数超过阈值
-			if (_continuousDetectSpoofingNum >= _continuousDetectSpoofingThreshold) {
-				if (_continuousDetectSpoofingNum == _continuousDetectSpoofingThreshold) {
-					//保存人脸原始图和特征
-					double start = (double)getTickCount();
-					_cacheFeature = arcFace.getFeature(det1);
-					_cacheImg = willDetectFaceArea_rgb;
-					cout << "Extraction(1) Time: " << (getTickCount() - start) / getTickFrequency() << "s" << std::endl;
-				}
-				else {
-					double start = (double)getTickCount();
-					vector<float> feature = arcFace.getFeature(det1);
-					cout << "Extraction Time: " << (getTickCount() - start) / getTickFrequency() << "s" << std::endl;
-
-					float similarity = calcSimilar(_cacheFeature, feature);
-					imshow("_cacheImg", _cacheImg);
-					imshow("willDetectFaceArea_rgb", willDetectFaceArea_rgb);
-					std::stringstream ss;
-					ss << similarity;
-					cv::putText(_showImg_rgb,  "similar:" + ss.str(),
-						cv::Point(20, 105), 4, 0.5, cv::Scalar(0, 0, 125));
-					if (similarity >= 0.8) {
-						cv::putText(_showImg_rgb, "spoofing(sim)!", cv::Point(200, 30), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(0, 0, 255), 1);
-						cout << "spoofing(sim)!" << endl;
-						return 4;
-					}
-					else {//换了一个人，需要重新检测
-						_cacheFeature.clear();
-						_cacheImg.release();
-						_continuousDetectSpoofingNum = 0;
-					}
-				}
-			}
-			else if (_continuousDetectSpoofingNum == -1 && _cacheFeature.size()) {//活体
+			if (_continuousDetectSpoofingNum > _continuousDetectSpoofingThreshold) {
 				double start = (double)getTickCount();
 				vector<float> feature = arcFace.getFeature(det1);
-				cout << "Extraction Time(2): " << (getTickCount() - start) / getTickFrequency() << "s" << std::endl;
+				cout << "Extraction Time: " << (getTickCount() - start) / getTickFrequency() << "s" << std::endl;
 
 				float similarity = calcSimilar(_cacheFeature, feature);
-				imshow("_cacheImg", _cacheImg);
-				imshow("willDetectFaceArea_rgb", willDetectFaceArea_rgb);
+				/*imshow("_cacheImg", _cacheImg);
+				imshow("willDetectFaceArea_rgb", willDetectFaceArea_rgb);*/
+				std::stringstream ss;
+				ss << similarity;
+				cv::putText(_showImg_rgb, "similar:" + ss.str(),
+					cv::Point(20, 105), 4, 0.5, cv::Scalar(0, 0, 125));
+				if (similarity >= 0.8) {
+					cv::putText(_showImg_rgb, "spoofing(sim)!", cv::Point(200, 30), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(0, 0, 255), 1);
+					cout << "spoofing(sim)!" << endl;
+					return 13;
+				}
+				else {//换了一个人，需要重新检测
+					/*_cacheFeature.clear();
+					_cacheImg.release();*/
+					_continuousDetectSpoofingNum = 0;
+				}
+			}
+			//连续检测为活体的次数超过阈值
+			else if (-_continuousDetectSpoofingNum > _continuousDetectPassingThreshold) {
+				double start = (double)getTickCount();
+				vector<float> feature = arcFace.getFeature(det1);
+				cout << "Extraction Time(1): " << (getTickCount() - start) / getTickFrequency() << "s" << std::endl;
+
+				float similarity = calcSimilar(_cacheFeature, feature);
+				/*imshow("_cacheImg", _cacheImg);
+				imshow("willDetectFaceArea_rgb", willDetectFaceArea_rgb);*/
 				std::stringstream ss;
 				ss << similarity;
 				cv::putText(_showImg_rgb, "similar:" + ss.str(),
@@ -295,11 +287,11 @@ namespace detect
 				if (similarity >= 0.8) {
 					cv::putText(_showImg_rgb, "pass(sim)", cv::Point(280, 30), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(0, 255, 0), 1);
 					cout << "pass" << endl;
-					return 1;
+					return 2;
 				}
 				else {//换了一个人，需要重新检测
-					_cacheFeature.clear();
-					_cacheImg.release();
+					/*_cacheFeature.clear();
+					_cacheImg.release();*/
 					_continuousDetectSpoofingNum = 0;
 				}
 			}
@@ -330,29 +322,43 @@ namespace detect
 
 			if (1 == iResponse)
 			{
-				_continuousDetectSpoofingNum = -1;
-				_cacheFeature = arcFace.getFeature(det1);
-				_cacheImg = willDetectFaceArea_rgb;
+				if (_continuousDetectSpoofingNum > 0) {
+					_continuousDetectSpoofingNum = 0;
+				}
+
+				if (0 == _continuousDetectSpoofingNum) {
+					_cacheFeature = arcFace.getFeature(det1);
+					_cacheImg = willDetectFaceArea_rgb;
+				}
+				_continuousDetectSpoofingNum--;
 				cv::putText(_showImg_rgb, "pass", cv::Point(280, 30), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(0, 255, 0), 1);
 				return 1;
 			}
 			else if (-1 == iResponse) {//无光流图像，未检测到人脸(近红外未检测到人脸，就不做活体检测)
-				_cacheFeature.clear();
-				_cacheImg.release();
+				/*_cacheFeature.clear();
+				_cacheImg.release();*/
 				_continuousDetectSpoofingNum = 0;
 				return 0;
 			}
 			else
 			{
+				if (_continuousDetectSpoofingNum < 0) {
+					_continuousDetectSpoofingNum = 0;
+				}
+
+				if (0 == _continuousDetectSpoofingNum) {
+					_cacheFeature = arcFace.getFeature(det1);
+					_cacheImg = willDetectFaceArea_rgb;
+				}
 				_continuousDetectSpoofingNum++;
 				cv::putText(_showImg_rgb, "spoofing!", cv::Point(280, 30), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(0, 0, 255), 1);
 				cout << "spoofing!" << endl;
-				return 3;
+				return 12;
 			}
 		}
 		{//未检测到人脸
-			_cacheFeature.clear();
-			_cacheImg.release();
+			/*_cacheFeature.clear();
+			_cacheImg.release();*/
 			_continuousDetectSpoofingNum = 0;
 			return -1;
 		}
@@ -726,6 +732,14 @@ namespace detect
 
 	void Detector::setContinuousDetectSpoofingThreshold(int continuousDetectSpoofingThreshold) {
 		_continuousDetectSpoofingThreshold = continuousDetectSpoofingThreshold;
+	}
+
+	int Detector::getContinuousDetectPassingThreshold() {
+		return _continuousDetectPassingThreshold;
+	}
+
+	void Detector::setContinuousDetectPassingThreshold(int continuousDetectPassingThreshold) {
+		_continuousDetectPassingThreshold = continuousDetectPassingThreshold;
 	}
 }
 
