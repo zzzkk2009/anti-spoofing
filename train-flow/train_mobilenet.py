@@ -27,7 +27,7 @@ if __name__ == '__main__':
     data.set_data_aug_level(parser, 2)
     parser.set_defaults(
         # network
-        network        = 'shufflenet_v2',
+        network        = 'zkflow_mobilenet',
         #num_layers     = 110,
         # data
         data_train     = train_fname,
@@ -44,14 +44,12 @@ if __name__ == '__main__':
         batch_size     = 128,
         num_epochs     = 1001,
         lr             = 1e-5,
-        lr_step_epochs = '800,900',
-        model_prefix   = 'checkpoint_48x64_2w',
+        lr_step_epochs = '100,300,500,700,900',
+        model_prefix   = 'checkpoint_48x64_2w_mobilenet',
         checkpoint_period = 100, # How many epochs to wait before checkpointing. Defaults to 1.
 #	    load_epoch     = 1000,
-	    gpus           = '0,1,2,3'
+	    gpus           = '0'
     )
-
-    
     args = parser.parse_args()
 
     # load network

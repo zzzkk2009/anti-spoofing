@@ -27,7 +27,7 @@ if __name__ == '__main__':
     data.set_data_aug_level(parser, 2)
     parser.set_defaults(
         # network
-        network        = 'shufflenet_v2',
+        network        = 'mobilenetv2',
         #num_layers     = 110,
         # data
         data_train     = train_fname,
@@ -37,21 +37,21 @@ if __name__ == '__main__':
         image_shape    = '3,64,48', # channel,height,width
         pad_size       = 0,
         # data aug
-        max_random_rotate_angle = 45,
-        max_random_scale = 0,
-        min_random_scale = 0,
+        # max_random_rotate_angle = 45, # 光流图像不需要过多的数据增强，否则容易过拟合
+        # max_random_scale = 0,
+        # min_random_scale = 0,
+        random_crop = 0,
         # train
         batch_size     = 128,
-        num_epochs     = 1001,
-        lr             = 1e-5,
-        lr_step_epochs = '800,900',
-        model_prefix   = 'checkpoint_48x64_2w',
+        num_epochs     = 2601,
+        wd             = 0.1,
+        lr             = 1e-8,
+        lr_step_epochs = '2550',
+        model_prefix   = 'checkpoint_48x64_2w_mobilenetv2',
         checkpoint_period = 100, # How many epochs to wait before checkpointing. Defaults to 1.
-#	    load_epoch     = 1000,
-	    gpus           = '0,1,2,3'
+	    load_epoch     = 2500,
+	    gpus           = '0'
     )
-
-    
     args = parser.parse_args()
 
     # load network
